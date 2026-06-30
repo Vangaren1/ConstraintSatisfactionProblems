@@ -49,6 +49,13 @@ class CSP:
         if value not in self.domains[var]:
             raise ValueError(f"Value {value} is not in domain of {var.name}")
 
+    def _addNeighborEdge(self, var1, var2):
+        if var1 == var2:
+            raise ValueError(f"The value {var1.name} cannot be its own neighbor")
+
+        self.neighbors[var1].add(var2)
+        self.neighbors[var2].add(var1)
+
     def addVariable(self, name, domain):
         new_var = CSPVariable(name)
 
@@ -76,6 +83,10 @@ class CSP:
             raise ValueError("Constraint already exists")
 
         self.constraints.add(new_con)
+        for i in range(len(vars)):
+            for j in range(i + 1, len(vars)):
+                self._addNeighborEdge(vars[i], vars[j])
+
         return new_con
 
     def assign(self, var, value):
@@ -99,7 +110,7 @@ class CSP:
             raise ValueError(f"Value {value} is not currently in domain of {var.name}")
 
         self.domains[var].remove(value)
-        
+
     def restoreToDomain(self, var, value):
         self._requireVariable(var)
 
@@ -107,7 +118,9 @@ class CSP:
             raise ValueError(f"Value {value} was not in original domain of {var.name}")
 
         if value in self.domains[var]:
-            raise ValueError(f"Value {value} is already in current domain of {var.name}")
+            raise ValueError(
+                f"Value {value} is already in current domain of {var.name}"
+            )
 
         self.domains[var].add(value)
 
@@ -115,7 +128,6 @@ class CSP:
         self._requireVariable(var)
 
         self.domains[var] = self.original_domains[var].copy()
-
 
     def resetAllDomains(self):
         for var in self.variables:
@@ -170,8 +182,37 @@ class CSP:
 
         return candidates[0][0]
 
-    def orderValues(self, var):
-        return list(self.domains[var])
+    def getPruneCount(self, var, value):
+        if not self.isConsistent(var, value):
+            return float("inf")
+
+        pruned = 0
+        self.assign(var, value)
+
+        try:
+            for neighbor in self.neighbors[var]:
+                if neighbor in self.assignments:
+                    continue
+
+                for nval in list(self.domains[neighbor]):
+                    if not self.isConsistent(neighbor, nval):
+                        pruned += 1
+
+            return pruned
+
+        finally:
+            self.unassign(var)
+
+    def orderValues(self, var, lcv=False):
+        initialValues = list(self.domains[var])
+        if not lcv:
+            return initialValues
+
+        withPruneCount = [(val, self.getPruneCount(var, val)) for val in initialValues]
+
+        withPruneCount.sort(key=lambda item: item[1])
+
+        return [val[0] for val in withPruneCount]
 
     def addNeighbors(self, var1, var2, symmetric=True):
         self._requireVariable(var1)
