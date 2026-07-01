@@ -5,13 +5,20 @@ from collections import defaultdict
 
 @dataclass(frozen=True)
 class CSPVariable:
-    name: str
+    name: str | int
+
+    def __str__(self):
+        return str(self.name)
 
 
 @dataclass(frozen=True)
 class CSPConstraint:
     variables: tuple[CSPVariable, ...]
     function: Callable[..., bool]
+
+    def __str__(self):
+        vars_str = ", ".join(str(var) for var in self.variables)
+        return f"Constraint({vars_str})"
 
 
 class CSP:
@@ -22,6 +29,27 @@ class CSP:
         self.assignments: dict[CSPVariable, Any] = {}
         self.constraints: set[CSPConstraint] = set()
         self.neighbors: dict[CSPVariable, set[CSPVariable]] = defaultdict(set)
+
+    def __str__(self):
+        lines = []
+
+        lines.append("Variables:")
+        for var in sorted(self.variables, key=lambda v: str(v.name)):
+            domain = self.domains[var]
+            assignment = self.assignments.get(var, None)
+            lines.append(f"  {var}: domain={domain}, assignment={assignment}")
+
+        # lines.append("Constraints:")
+        # for constraint in self.constraints:
+        #     lines.append(f"  {constraint}")
+
+        lines.append("Neighbors:")
+        for var in sorted(self.variables, key=lambda v: str(v.name)):
+            neighbors = sorted(self.neighbors[var], key=lambda v: str(v.name))
+            neighbor_names = ", ".join(str(n) for n in neighbors)
+            lines.append(f"  {var}: {{{neighbor_names}}}")
+
+        return "\n".join(lines)
 
     def _requireVariable(self, var):
         if var not in self.variables:
@@ -56,6 +84,18 @@ class CSP:
         self.neighbors[var1].add(var2)
         self.neighbors[var2].add(var1)
 
+    def _getVariable(self, var):
+        if isinstance(var, CSPVariable):
+            self._requireVariable(var)
+            return var
+
+        if isinstance(var, str) or isinstance(var, int):
+            candidate = CSPVariable(var)
+            self._requireVariable(candidate)
+            return candidate
+
+        raise TypeError("Variable must be a CSPVariable, string, or integer")
+
     def addVariable(self, name, domain):
         new_var = CSPVariable(name)
 
@@ -74,19 +114,17 @@ class CSP:
         return self.addNaryConstraint([var1, var2], constraint)
 
     def addNaryConstraint(self, vars, constraint):
-        new_con = CSPConstraint(tuple(vars), constraint)
+        resolved_vars = []
 
         for v in vars:
-            self._requireVariable(v)
+            resolved_vars.append(self._getVariable(v))
+
+        new_con = CSPConstraint(tuple(resolved_vars), constraint)
 
         if new_con in self.constraints:
             raise ValueError("Constraint already exists")
 
         self.constraints.add(new_con)
-        for i in range(len(vars)):
-            for j in range(i + 1, len(vars)):
-                self._addNeighborEdge(vars[i], vars[j])
-
         return new_con
 
     def assign(self, var, value):

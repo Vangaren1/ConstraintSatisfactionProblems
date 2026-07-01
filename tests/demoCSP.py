@@ -1,8 +1,8 @@
 # demo.py
 
-from csp import CSP
+from csp.csp import CSP
 
-from tests.util import (
+from csp.util import (
     print_section,
     expect_true,
     expect_false,

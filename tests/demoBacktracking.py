@@ -1,8 +1,8 @@
 # demoBacktracking.py
 
-from csp import CSP
+from csp.csp import CSP
 from csp.backtracking import backtracking
-from tests.util import print_section, expect_true, expect_none, expect_not_none
+from csp.util import print_section, expect_true, expect_none, expect_not_none
 
 
 def assignment_dict(csp):

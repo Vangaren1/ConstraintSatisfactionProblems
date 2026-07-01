@@ -1,3 +1,6 @@
+from time import perf_counter
+
+
 def print_section(title):
     print("\n" + "=" * 60)
     print(title)
@@ -42,3 +45,12 @@ def expect_not_none(description, value):
 
 def names(items):
     return sorted(item.name for item in items)
+
+
+def timed_run(label, func, *args, **kwargs):
+    start = perf_counter()
+    result = func(*args, **kwargs)
+    elapsed = perf_counter() - start
+
+    print(f"{label}: {elapsed:.6f} seconds")
+    return result

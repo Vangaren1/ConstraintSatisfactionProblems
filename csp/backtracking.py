@@ -1,4 +1,4 @@
-from csp import CSP
+from csp.csp import CSP
 
 
 def backtracking(thisCSP: CSP, forwardCheck=False, lcv=False):
