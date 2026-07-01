@@ -2,7 +2,7 @@
 
 from csp import CSP
 
-from util import (
+from tests.util import (
     print_section,
     expect_true,
     expect_false,
