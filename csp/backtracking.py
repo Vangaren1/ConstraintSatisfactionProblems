@@ -11,28 +11,11 @@ def backtracking(thisCSP: CSP, forwardCheck=False, lcv=False):
         if thisCSP.isConsistent(var, value):
             thisCSP.assign(var, value)
 
-            pruned = []
             failed = False
+            pruned = []
 
             if forwardCheck:
-                for neighbor in thisCSP.neighbors[var]:
-                    if neighbor in thisCSP.assignments:
-                        continue
-
-                    for neighborVal in list(thisCSP.domains[neighbor]):
-                        if not thisCSP.isConsistent(neighbor, neighborVal):
-                            pruned.append((neighbor, neighborVal))
-
-                for neigh, neighVal in pruned:
-                    thisCSP.removeFromDomain(neigh, neighVal)
-
-                for neighbor in thisCSP.neighbors[var]:
-                    if (
-                        neighbor not in thisCSP.assignments
-                        and len(thisCSP.domains[neighbor]) == 0
-                    ):
-                        failed = True
-                        break
+                failed, pruned = forwardCheckFunc(thisCSP, var)
 
             if not failed:
                 result = backtracking(thisCSP, forwardCheck, lcv)
@@ -49,6 +32,29 @@ def backtracking(thisCSP: CSP, forwardCheck=False, lcv=False):
     return None
 
 
+def forwardCheckFunc(thisCSP: CSP, var):
+    pruned = []
+    failed = False
+
+    for neighbor in thisCSP.neighbors[var]:
+        if neighbor in thisCSP.assignments:
+            continue
+
+        for neighborVal in list(thisCSP.domains[neighbor]):
+            if not thisCSP.isConsistent(neighbor, neighborVal):
+                pruned.append((neighbor, neighborVal))
+
+    for neigh, neighVal in pruned:
+        thisCSP.removeFromDomain(neigh, neighVal)
+
+    for neighbor in thisCSP.neighbors[var]:
+        if neighbor not in thisCSP.assignments and len(thisCSP.domains[neighbor]) == 0:
+            failed = True
+            break
+
+    return failed, pruned
+
+
 def backtracking_all(csp, forwardCheck=False, lcv=False):
     solutions = []
 
@@ -63,13 +69,18 @@ def backtracking_all(csp, forwardCheck=False, lcv=False):
             if csp.isConsistent(var, value):
                 csp.assign(var, value)
 
+                failed = False
+                pruned = []
+
                 if forwardCheck:
-                    pruned = csp.forwardCheck(var, value)
-                    if pruned is not None:
-                        dfs()
-                    csp.restore(pruned)
-                else:
+                    failed, pruned = forwardCheckFunc(csp, var)
+
+                if not failed:
                     dfs()
+
+                if forwardCheck:
+                    for neigh, neighVal in pruned:
+                        csp.restoreToDomain(neigh, neighVal)
 
                 csp.unassign(var)
 

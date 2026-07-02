@@ -19,19 +19,24 @@ def nQueens(n: int, forwardCheck=False, lcv=False):
     return backtracking_all(c, forwardCheck=forwardCheck, lcv=lcv)
 
 
+def nqueensprint(csp):
+    return
+
+
 def main():
-    results = nQueens(4)
-    for r in results:
-        print(r)
-    # timed_run("nQueens n=20 | basic", nQueens, 20)
-    # timed_run("nQueens n=20 | forward checking", nQueens, 20, forwardCheck=True)
-    # timed_run(
-    #     "nQueens n=20 | forward checking + LCV",
-    #     nQueens,
-    #     20,
-    #     forwardCheck=True,
-    #     lcv=True,
-    # )
+    i = 8
+    timed_run(f"nQueens n={i} | basic", nQueens, nqueensprint, i)
+    timed_run(
+        f"nQueens n={i} | forward checking", nQueens, nqueensprint, i, forwardCheck=True
+    )
+    timed_run(
+        f"nQueens n={i} | forward checking + LCV",
+        nQueens,
+        nqueensprint,
+        i,
+        forwardCheck=True,
+        lcv=True,
+    )
 
 
 if __name__ == "__main__":
