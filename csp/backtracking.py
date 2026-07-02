@@ -47,3 +47,31 @@ def backtracking(thisCSP: CSP, forwardCheck=False, lcv=False):
             thisCSP.unassign(var)
 
     return None
+
+
+def backtracking_all(csp, forwardCheck=False, lcv=False):
+    solutions = []
+
+    def dfs():
+        var = csp.selectUnassignedVariable()
+
+        if var is None:
+            solutions.append(dict(csp.assignments))
+            return
+
+        for value in csp.orderValues(var, lcv):
+            if csp.isConsistent(var, value):
+                csp.assign(var, value)
+
+                if forwardCheck:
+                    pruned = csp.forwardCheck(var, value)
+                    if pruned is not None:
+                        dfs()
+                    csp.restore(pruned)
+                else:
+                    dfs()
+
+                csp.unassign(var)
+
+    dfs()
+    return solutions

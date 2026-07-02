@@ -1,5 +1,5 @@
 from csp.csp import CSP
-from csp.backtracking import backtracking
+from csp.backtracking import backtracking, backtracking_all
 from csp.util import timed_run
 
 
@@ -16,40 +16,22 @@ def nQueens(n: int, forwardCheck=False, lcv=False):
                 c.addBinaryConstraint(
                     x, y, lambda a, b, x=x, y=y: abs(x - y) != abs(a - b)
                 )
-    return backtracking(c, forwardCheck=forwardCheck, lcv=lcv)
-
-
-def printQueenCSP(csp: CSP):
-    rows = [(r.name, csp.assignments[r]) for r in csp.variables]
-    rows.sort()
-    n = len(rows)
-    grid = [["-" for _ in range(n)] for _ in range(n)]
-    for row, Q in rows:
-        grid[row][Q] = "Q"
-    for g in grid:
-        print(g)
+    return backtracking_all(c, forwardCheck=forwardCheck, lcv=lcv)
 
 
 def main():
-
-    n = 8
-
-    timed_run(f"nQueens n={n} | basic", nQueens, printQueenCSP, n)
-    timed_run(
-        f"nQueens n={n} | forward checking",
-        nQueens,
-        printQueenCSP,
-        n,
-        forwardCheck=True,
-    )
-    timed_run(
-        f"nQueens n={n} | forward checking + LCV",
-        nQueens,
-        printQueenCSP,
-        n,
-        forwardCheck=True,
-        lcv=True,
-    )
+    results = nQueens(4)
+    for r in results:
+        print(r)
+    # timed_run("nQueens n=20 | basic", nQueens, 20)
+    # timed_run("nQueens n=20 | forward checking", nQueens, 20, forwardCheck=True)
+    # timed_run(
+    #     "nQueens n=20 | forward checking + LCV",
+    #     nQueens,
+    #     20,
+    #     forwardCheck=True,
+    #     lcv=True,
+    # )
 
 
 if __name__ == "__main__":
