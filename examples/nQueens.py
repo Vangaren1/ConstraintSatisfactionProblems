@@ -19,13 +19,34 @@ def nQueens(n: int, forwardCheck=False, lcv=False):
     return backtracking(c, forwardCheck=forwardCheck, lcv=lcv)
 
 
+def printQueenCSP(csp: CSP):
+    rows = [(r.name, csp.assignments[r]) for r in csp.variables]
+    rows.sort()
+    n = len(rows)
+    grid = [["-" for _ in range(n)] for _ in range(n)]
+    for row, Q in rows:
+        grid[row][Q] = "Q"
+    for g in grid:
+        print(g)
+
+
 def main():
-    timed_run("nQueens n=20 | basic", nQueens, 20)
-    timed_run("nQueens n=20 | forward checking", nQueens, 20, forwardCheck=True)
+
+    n = 8
+
+    timed_run(f"nQueens n={n} | basic", nQueens, printQueenCSP, n)
     timed_run(
-        "nQueens n=20 | forward checking + LCV",
+        f"nQueens n={n} | forward checking",
         nQueens,
-        20,
+        printQueenCSP,
+        n,
+        forwardCheck=True,
+    )
+    timed_run(
+        f"nQueens n={n} | forward checking + LCV",
+        nQueens,
+        printQueenCSP,
+        n,
         forwardCheck=True,
         lcv=True,
     )

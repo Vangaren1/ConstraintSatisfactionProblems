@@ -47,10 +47,11 @@ def names(items):
     return sorted(item.name for item in items)
 
 
-def timed_run(label, func, *args, **kwargs):
+def timed_run(label, func, cspPrintFunc=None, *args, **kwargs):
     start = perf_counter()
     result = func(*args, **kwargs)
     elapsed = perf_counter() - start
-
+    if cspPrintFunc is not None:
+        cspPrintFunc(result)
     print(f"{label}: {elapsed:.6f} seconds")
     return result
