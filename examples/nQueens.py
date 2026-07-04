@@ -16,7 +16,7 @@ def nQueens(n: int, forwardCheck=False, lcv=False):
                 c.addBinaryConstraint(
                     x, y, lambda a, b, x=x, y=y: abs(x - y) != abs(a - b)
                 )
-    return backtracking_all(c, forwardCheck=forwardCheck, lcv=lcv)
+    return backtracking(c, forwardCheck=forwardCheck, lcv=lcv)
 
 
 def nqueensprint(csp):
@@ -24,7 +24,7 @@ def nqueensprint(csp):
 
 
 def main():
-    i = 8
+    i = 20
     timed_run(f"nQueens n={i} | basic", nQueens, nqueensprint, i)
     timed_run(
         f"nQueens n={i} | forward checking", nQueens, nqueensprint, i, forwardCheck=True

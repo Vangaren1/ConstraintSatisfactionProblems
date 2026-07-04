@@ -125,6 +125,12 @@ class CSP:
             raise ValueError("Constraint already exists")
 
         self.constraints.add(new_con)
+
+        for i in range(len(resolved_vars)):
+            for j in range(i + 1, len(resolved_vars)):
+                self.neighbors[resolved_vars[i]].add(resolved_vars[j])
+                self.neighbors[resolved_vars[j]].add(resolved_vars[i])
+
         return new_con
 
     def assign(self, var, value):
