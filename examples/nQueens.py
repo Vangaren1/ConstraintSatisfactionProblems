@@ -3,7 +3,7 @@ from csp.backtracking import backtracking, backtracking_all
 from csp.util import timed_run
 
 
-def nQueens(n: int, forwardCheck=False, lcv=False):
+def nQueens(n: int, inference="none", lcv=False):
     c = CSP()
 
     domain = [i for i in range(n)]
@@ -16,7 +16,7 @@ def nQueens(n: int, forwardCheck=False, lcv=False):
                 c.addBinaryConstraint(
                     x, y, lambda a, b, x=x, y=y: abs(x - y) != abs(a - b)
                 )
-    return backtracking(c, forwardCheck=forwardCheck, lcv=lcv)
+    return backtracking(c, inference=inference, lcv=lcv)
 
 
 def nqueensprint(csp):
@@ -27,14 +27,26 @@ def main():
     i = 20
     timed_run(f"nQueens n={i} | basic", nQueens, nqueensprint, i)
     timed_run(
-        f"nQueens n={i} | forward checking", nQueens, nqueensprint, i, forwardCheck=True
+        f"nQueens n={i} | forward checking",
+        nQueens,
+        nqueensprint,
+        i,
+        inference="forward_check",
     )
     timed_run(
         f"nQueens n={i} | forward checking + LCV",
         nQueens,
         nqueensprint,
         i,
-        forwardCheck=True,
+        inference="forward_check",
+        lcv=True,
+    )
+    timed_run(
+        f"nQueens n={i} | AC-3 + LCV",
+        nQueens,
+        nqueensprint,
+        i,
+        inference="ac3",
         lcv=True,
     )
 

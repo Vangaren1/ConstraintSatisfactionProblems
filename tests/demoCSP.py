@@ -1,4 +1,4 @@
-# demo.py
+# demoCSP.py
 
 from csp.csp import CSP
 
@@ -6,11 +6,16 @@ from csp.util import (
     print_section,
     expect_true,
     expect_false,
-    expect_none,
-    expect_not_none,
     expect_error,
     names,
 )
+
+
+def expect_equal(description, actual, expected):
+    if actual == expected:
+        print(f"[PASS] {description}")
+    else:
+        print(f"[FAIL] {description}: expected {expected}, got {actual}")
 
 
 def test_variables_and_domains():
@@ -23,13 +28,14 @@ def test_variables_and_domains():
 
     expect_true("X exists", x in csp.variables)
     expect_true("Y exists", y in csp.variables)
-    expect_true("X current domain is {1, 2, 3}", csp.domains[x] == {1, 2, 3})
-    expect_true("X original domain is {1, 2, 3}", csp.original_domains[x] == {1, 2, 3})
+    expect_equal("X current domain is {1, 2, 3}", csp.domains[x], {1, 2, 3})
+    expect_equal("X original domain is {1, 2, 3}", csp.original_domains[x], {1, 2, 3})
 
     expect_error(
         "Duplicate variable name rejected",
         lambda: csp.addVariable("X", [4, 5, 6]),
     )
+
 
 
 def test_domain_mutation():
@@ -43,37 +49,28 @@ def test_domain_mutation():
     expect_false("1 removed from current domain", 1 in csp.domains[x])
     expect_true("1 still exists in original domain", 1 in csp.original_domains[x])
 
-    expect_error(
-        "Cannot remove missing value",
-        lambda: csp.removeFromDomain(x, 1),
-    )
+    expect_error("Cannot remove missing value", lambda: csp.removeFromDomain(x, 1))
 
     csp.restoreToDomain(x, 1)
 
     expect_true("1 restored to current domain", 1 in csp.domains[x])
 
-    expect_error(
-        "Cannot restore value already present",
-        lambda: csp.restoreToDomain(x, 1),
-    )
-
-    expect_error(
-        "Cannot restore value outside original domain",
-        lambda: csp.restoreToDomain(x, 99),
-    )
+    expect_error("Cannot restore value already present", lambda: csp.restoreToDomain(x, 1))
+    expect_error("Cannot restore value outside original domain", lambda: csp.restoreToDomain(x, 99))
 
     csp.removeFromDomain(x, 1)
     csp.removeFromDomain(x, 2)
 
-    expect_true("Only one value remains after pruning", csp.domains[x] == {3})
+    expect_equal("Only one value remains after pruning", csp.domains[x], {3})
 
     csp.resetDomain(x)
 
-    expect_true("resetDomain restores original domain", csp.domains[x] == {1, 2, 3})
+    expect_equal("resetDomain restores original domain", csp.domains[x], {1, 2, 3})
     expect_true(
         "resetDomain copies original domain instead of aliasing it",
         csp.domains[x] is not csp.original_domains[x],
     )
+
 
 
 def test_assignment_rules():
@@ -84,26 +81,17 @@ def test_assignment_rules():
 
     csp.assign(x, 2)
 
-    expect_true("X assigned to 2", csp.assignments[x] == 2)
+    expect_equal("X assigned to 2", csp.assignments[x], 2)
 
-    expect_error(
-        "Cannot assign already-assigned variable",
-        lambda: csp.assign(x, 3),
-    )
+    expect_error("Cannot assign already-assigned variable", lambda: csp.assign(x, 3))
 
     csp.unassign(x)
 
     expect_true("X unassigned", x not in csp.assignments)
 
-    expect_error(
-        "Cannot unassign unassigned variable",
-        lambda: csp.unassign(x),
-    )
+    expect_error("Cannot unassign unassigned variable", lambda: csp.unassign(x))
+    expect_error("Cannot assign value outside domain", lambda: csp.assign(x, 99))
 
-    expect_error(
-        "Cannot assign value outside domain",
-        lambda: csp.assign(x, 99),
-    )
 
 
 def test_unary_binary_nary_constraints():
@@ -141,6 +129,7 @@ def test_unary_binary_nary_constraints():
     csp.unassign(b)
 
 
+
 def test_automatic_neighbors():
     print_section("Automatic Neighbor Creation")
 
@@ -162,15 +151,9 @@ def test_automatic_neighbors():
     for var in sorted(csp.variables, key=lambda v: v.name):
         print(f"{var.name}: {names(csp.neighbors[var])}")
 
-    expect_error(
-        "Duplicate manual neighbor edge rejected",
-        lambda: csp.addNeighbors(a, b),
-    )
+    expect_error("Duplicate manual neighbor edge rejected", lambda: csp.addNeighbors(a, b))
+    expect_error("Self-neighbor rejected", lambda: csp.addNeighbors(a, a))
 
-    expect_error(
-        "Self-neighbor rejected",
-        lambda: csp.addNeighbors(a, a),
-    )
 
 
 def test_directed_neighbors():
@@ -185,6 +168,7 @@ def test_directed_neighbors():
 
     expect_true("A has B as directed neighbor", b in csp.neighbors[a])
     expect_false("B does not have A as directed neighbor", a in csp.neighbors[b])
+
 
 
 def test_mrv_degree_selection():
@@ -204,6 +188,7 @@ def test_mrv_degree_selection():
     print(f"Selected variable: {selected.name}")
 
     expect_true("MRV selects variable with smallest domain", selected == b)
+
 
 
 def test_lcv_ordering():
@@ -229,10 +214,33 @@ def test_lcv_ordering():
     print(f"Prune scores: {scores}")
     print(f"LCV order: {ordered}")
 
-    expect_true("X=2 is most constraining", csp.getPruneCount(x, 2) == 2)
-    expect_true("X=1 prunes one value", csp.getPruneCount(x, 1) == 1)
-    expect_true("X=3 prunes one value", csp.getPruneCount(x, 3) == 1)
+    expect_equal("X=2 is most constraining", csp.getPruneCount(x, 2), 2)
+    expect_equal("X=1 prunes one value", csp.getPruneCount(x, 1), 1)
+    expect_equal("X=3 prunes one value", csp.getPruneCount(x, 3), 1)
     expect_true("LCV puts value 2 last", ordered[-1] == 2)
+
+
+
+def test_pair_consistency_for_ac3():
+    print_section("Pair Consistency Helper for AC-3")
+
+    csp = CSP()
+
+    a = csp.addVariable("A", [1, 2, 3])
+    b = csp.addVariable("B", [1, 2, 3])
+    c = csp.addVariable("C", [1, 2, 3])
+
+    csp.addBinaryConstraint(a, b, lambda av, bv: av < bv)
+    csp.addNaryConstraint([a, b, c], lambda av, bv, cv: av + bv + cv == 6)
+
+    expect_true("A=1 has binary support with B=2", csp.isPairConsistent(a, 1, b, 2))
+    expect_false("A=2 has no binary support with B=1", csp.isPairConsistent(a, 2, b, 1))
+    expect_true("Reverse argument order still works", csp.isPairConsistent(b, 2, a, 1))
+    expect_true(
+        "N-ary constraints are ignored by pair consistency",
+        csp.isPairConsistent(a, 3, c, 3),
+    )
+
 
 
 def main():
@@ -244,6 +252,7 @@ def main():
     test_directed_neighbors()
     test_mrv_degree_selection()
     test_lcv_ordering()
+    test_pair_consistency_for_ac3()
 
     print_section("Demo Complete")
     print("CSP demo completed.")

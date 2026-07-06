@@ -274,3 +274,27 @@ class CSP:
         self.neighbors[var1].add(var2)
         if symmetric:
             self.neighbors[var2].add(var1)
+
+    def isPairConsistent(self, var1, value1, var2, value2):
+        self._requireVariable(var1)
+        self._requireVariable(var2)
+
+        for constraint in self.constraints:
+            if var1 not in constraint.variables or var2 not in constraint.variables:
+                continue
+
+            # restrict AC-3 to binary constraints for now
+            if len(constraint.variables) != 2:
+                continue
+
+            values = []
+            for var in constraint.variables:
+                if var == var1:
+                    values.append(value1)
+                elif var == var2:
+                    values.append(value2)
+
+            if not constraint.function(*values):
+                return False
+
+        return True
