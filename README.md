@@ -43,9 +43,11 @@ csp/
   backtracking.py     Backtracking, forward checking, AC-3, and all-solution search
   util.py             Demo/test helpers and timing utility
 
+tests/
+  demoCSP.py          Explicit regression/demo checks for the CSP class
+  demoBacktracking.py Explicit regression/demo checks for the solvers
+
 examples/
-  demoCSP.py          Tests and demonstrations for the CSP class
-  demoBacktracking.py Tests and demonstrations for the solvers
   nQueens.py          N-Queens CSP example and benchmark/demo
 ```
 
@@ -54,12 +56,14 @@ examples/
 From the repository root:
 
 ```bash
-python3 -m examples.demoCSP
-python3 -m examples.demoBacktracking
+python3 -m tests.demoCSP
+python3 -m tests.demoBacktracking
 python3 -m examples.nQueens
 ```
 
-The demos print simple pass/fail checks and timing information. They are not meant to replace a formal unit test suite, but they are useful regression checks while developing the solver.
+The `tests/demo*.py` scripts print simple pass/fail checks and are meant to explicitly exercise the base functionality of the CSP class and solver implementations. They are lightweight regression/demo checks rather than a formal unit test suite.
+
+The `examples/` directory is for problem-specific demonstrations, such as N-Queens, that use the generic CSP framework.
 
 ## Example: choosing a solver mode
 
